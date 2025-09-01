@@ -1,0 +1,14 @@
+{
+  "name": "WEB3",
+  "packageManager": "yarn@4.6.0",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
+    "eslint": "^9.34.0",
+    "typescript": "^5.9.2"
+  }
+}
