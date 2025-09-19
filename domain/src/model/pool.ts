@@ -1,6 +1,5 @@
 import { standardShuffler } from '../utils/random_utils';
 import * as card from './card';
-import { CardType } from './card';
 
 export interface Pool {
     cards: card.Card[];
