@@ -1,17 +1,49 @@
+import { standardShuffler } from "../utils/random_utils";
 import * as card from "./card";
-import { Pool, createCardPool } from "./pool";
 
 export interface Deck {
   cards: card.Card[];
   drawCard(): card.Card | undefined;
 }
 
-export function createDeck(pool: Pool, number: number): Deck {
-  const cards = pool.cards.slice(0, number);
+export function createDeck(pool?: Pool): Deck {
+  const cards = pool ? pool.cards : createFullCardPool().cards;
   return {
     cards,
     drawCard() {
       return this.cards.shift();
     },
   };
+}
+
+interface Pool {
+  cards: card.Card[];
+}
+
+function createFullCardPool(): Pool {
+  const cards: card.Card[] = [];
+
+  for (const color of Object.values(card.CardColor)) {
+    if (color === card.CardColor.Wild) continue;
+
+    for (let number = 0; number < 10; number++) {
+      cards.push(card.createNumberCard(color, number));
+      if (number == 0) continue;
+      cards.push(card.createNumberCard(color, number));
+    }
+
+    for (let i = 0; i < 2; i++) {
+      cards.push(card.createActionCard(color, card.CardType.Skip));
+      cards.push(card.createActionCard(color, card.CardType.Reverse));
+      cards.push(card.createActionCard(color, card.CardType.DrawTwo));
+    }
+  }
+
+  for (let i = 0; i < 4; i++) {
+    cards.push(card.createWildCard(card.CardType.Wild));
+    cards.push(card.createWildCard(card.CardType.WildDrawFour));
+  }
+
+  standardShuffler<card.Card>(cards);
+  return { cards };
 }
