@@ -5,15 +5,16 @@ export type Randomizer = (bound: number) => number
 export const standardRandomizer: Randomizer = n => Math.floor(Math.random() * n)
 
 // A function that shuffles the given array
-export type Shuffler<T> = (cards: T[]) => void
+export type Shuffler<T> = (ts: T[]) => T[]
 
 // Perfect shuffle using the Fisher-Yates method
-export function standardShuffler<T>(cards: T[]) {
-  for(let i = 0; i < cards.length - 1; i++) {
-    const j = Math.floor(Math.random() * (cards.length - i) + i)
-    const temp = cards[j]
-    cards[j] = cards[i]
-    cards[i] = temp
+export function standardShuffler<T>(randomizer: Randomizer, ts: T[]): T[] {
+  const copy = [...ts]
+  for(let i = 0; i < copy.length - 1; i++) {
+    const j = randomizer(copy.length - i) + i
+    const temp = copy[j]
+    copy[j] = copy[i]
+    copy[i] = temp
   }
+  return copy
 }
-

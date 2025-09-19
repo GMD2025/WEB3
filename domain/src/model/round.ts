@@ -1,6 +1,6 @@
-import { Card, isANumberCard } from "./card";
+import { Card, CardColor, CardType, isANumberCard } from "./card";
 import { PlayerHand } from "./playerHand";
-import { createDeck, Deck } from "./deck";
+import { Deck } from "./deck";
 
 export enum direction {
   Clockwise = 1,
@@ -31,7 +31,7 @@ export class Round implements RoundInterface {
       { length: numberOfPlayers },
       () => new PlayerHand()
     );
-    this.deck = createDeck();
+    this.deck = new Deck();
 
     const firstCard = this.deck.drawCard();
     if (firstCard) this.discardPile.push(firstCard);
@@ -68,7 +68,7 @@ export class Round implements RoundInterface {
   }
 
   isLegalPlay(card: Card): boolean {
-    if (card.color === "Wild") return true;
+    if (card.color === CardColor.Wild) return true;
 
     const top = this.discardPile[this.discardPile.length - 1];
     if (card.color === top.color) return true;
@@ -81,16 +81,16 @@ export class Round implements RoundInterface {
 
   private handleCardEffect(card: Card): void {
     switch (card.type) {
-      case "Reverse":
+      case CardType.Reverse:
         this.direction =
           this.direction === direction.Clockwise
             ? direction.CounterClockwise
             : direction.Clockwise;
         break;
-      case "Skip":
+      case CardType.Skip:
         this.nextPlayer();
         break;
-      case "DrawTwo":
+      case CardType.DrawTwo:
         this.nextPlayer();
         const nextHand = this.hands[this.currentPlayer];
         for (let i = 0; i < 2; i++) {
@@ -98,7 +98,7 @@ export class Round implements RoundInterface {
           if (drawn) nextHand.addCard(drawn);
         }
         break;
-      case "WildDrawFour":
+      case CardType.WildDrawFour:
         this.nextPlayer();
         const nextHand4 = this.hands[this.currentPlayer];
         for (let i = 0; i < 4; i++) {

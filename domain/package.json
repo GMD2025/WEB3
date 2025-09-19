@@ -1,5 +1,5 @@
 {
-  "name": "uno",
+  "name": "domain",
   "version": "0.0.1",
   "description": "Uno",
   "main": "index.js",
@@ -11,7 +11,7 @@
     "oo",
     "functional"
   ],
-  "author": "Ole Ildsgaard Hougaard",
+  "author": "Michael and Seva",
   "license": "ISC",
   "dependencies": {
     "@babel/core": "^7.24.6",

@@ -1,18 +1,18 @@
 export enum CardColor {
-  Red = "Red",
-  Yellow = "Yellow",
-  Green = "Green",
-  Blue = "Blue",
-  Wild = "Wild",
+  Red = "RED",
+  Yellow = "YELLOW",
+  Green = "GREEN",
+  Blue = "BLUE",
+  Wild = "WILD",
 }
 
 export enum CardType {
-  Number = "Number",
-  Skip = "Skip",
-  Reverse = "Reverse",
-  DrawTwo = "DrawTwo",
-  Wild = "Wild",
-  WildDrawFour = "WildDrawFour",
+  Number = "NUMBERED",
+  Skip = "SKIP",
+  Reverse = "REVERSE",
+  DrawTwo = "DRAW",
+  Wild = "WILD",
+  WildDrawFour = "WILD DRAW",
 }
 
 export interface Card {
@@ -59,5 +59,5 @@ export function createWildCard(type: WildCard["type"]): WildCard {
 }
 
 export function isANumberCard(card: Card): card is NumberCard {
-  return card.type === "Number" && "number" in card;
+  return card.type === CardType.Number && "number" in card;
 }

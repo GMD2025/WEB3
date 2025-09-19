@@ -1,0 +1,34 @@
+{
+  "folders": [
+    {
+      "path": "../.."
+    },
+    {
+      "name": "WEB3",
+      "path": ".."
+    },
+    {
+      "name": "server",
+      "path": "../../yahtzee-graphql/server"
+    },
+    {
+      "name": "domain",
+      "path": "../../yahtzee-graphql/domain"
+    },
+    {
+      "name": "yahtzee-graphql",
+      "path": "../../yahtzee-graphql"
+    },
+    {
+      "name": "client",
+      "path": "../../yahtzee-graphql/client"
+    },
+    {
+      "name": "domain",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "jest.disabledWorkspaceFolders": ["WEB3", "yahtzee-graphql", "client"]
+  }
+}

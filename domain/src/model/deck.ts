@@ -1,26 +1,38 @@
-import { standardShuffler } from "../utils/random_utils";
+import {
+  Shuffler,
+  standardRandomizer,
+  standardShuffler,
+} from "../utils/random_utils";
 import * as card from "./card";
 
-export interface Deck {
+export interface DeckInterface {
   cards: card.Card[];
   drawCard(): card.Card | undefined;
 }
 
-export function createDeck(pool?: Pool): Deck {
-  const cards = pool ? pool.cards : createFullCardPool().cards;
-  return {
-    cards,
-    drawCard() {
-      return this.cards.shift();
-    },
-  };
-}
-
-interface Pool {
+export class Deck implements DeckInterface {
   cards: card.Card[];
+
+  constructor(pool?: card.Card[]) {
+    this.cards = pool ? pool : createFullCardPool();
+  }
+
+  drawCard(): card.Card | undefined {
+    return this.cards.shift();
+  }
+
+  get size(): number {
+    return this.cards.length;
+  }
+
+  shuffle(shuffler?: Shuffler<card.Card>): void {
+    this.cards = shuffler
+      ? shuffler(this.cards)
+      : standardShuffler(standardRandomizer, this.cards);
+  }
 }
 
-function createFullCardPool(): Pool {
+function createFullCardPool(): card.Card[] {
   const cards: card.Card[] = [];
 
   for (const color of Object.values(card.CardColor)) {
@@ -44,6 +56,14 @@ function createFullCardPool(): Pool {
     cards.push(card.createWildCard(card.CardType.WildDrawFour));
   }
 
-  standardShuffler<card.Card>(cards);
-  return { cards };
+  standardShuffler(standardRandomizer, cards);
+  return cards;
 }
+
+// jesus christ just for the sake of tests. They are ... ugh. not flexible.
+export const colors = [
+  card.CardColor.Red,
+  card.CardColor.Yellow,
+  card.CardColor.Green,
+  card.CardColor.Blue,
+];
