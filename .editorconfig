@@ -8,3 +8,10 @@ insert_final_newline = true
 charset = utf-8
 indent_style = space
 indent_size = 2
+
+ti_samij_krutoj = 5
+if (ti_samij_krutoj > 0) {
+  print(Ei, privet! Cho kak u tebja??? Tvojej mame nevestka ne nuzna?)
+}
+
+ne znaju kto eto napisal, no pust budet zdes!
