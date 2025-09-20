@@ -2,7 +2,6 @@ import { Card, CardColor, CardType, isANumberCard, WildCard } from "./card";
 import { PlayerHand } from "./playerHand";
 import { Deck } from "./deck";
 
-// Memento for minimal undo state
 export class RoundMemento {
   hands: { cards: Card[]; unoed: boolean }[];
   deck: Card[];
@@ -39,6 +38,9 @@ export interface RoundInterface {
   drawCard(playerIndex: number): Card | null;
   nextPlayer(): void;
   isLegalPlay(card: Card): boolean;
+
+  createMemento(): RoundMemento;
+  restoreMemento(memento: RoundMemento): void;
 }
 
 export class Round implements RoundInterface {
@@ -48,7 +50,6 @@ export class Round implements RoundInterface {
   currentPlayer: number = 0;
   direction: direction = direction.Clockwise;
 
-  // Create a memento of the current round state
   createMemento(): RoundMemento {
     return new RoundMemento(
       this.hands.map((h) => ({
@@ -62,7 +63,6 @@ export class Round implements RoundInterface {
     );
   }
 
-  // Restore round state from a memento
   restoreMemento(memento: RoundMemento): void {
     this.hands.forEach((h, i) => {
       h.playerHand.cards = [...memento.hands[i].cards];
@@ -74,7 +74,7 @@ export class Round implements RoundInterface {
     this.direction = memento.direction;
   }
 
-  constructor(numberOfPlayers: number) {
+  constructor(numberOfPlayers: number = 0) {
     this.hands = Array.from({ length: numberOfPlayers }, () => ({
       playerHand: new PlayerHand(),
       unoed: false,
