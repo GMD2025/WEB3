@@ -1,6 +1,28 @@
-import { Card, CardColor, CardType, isANumberCard } from "./card";
+import { Card, CardColor, CardType, isANumberCard, WildCard } from "./card";
 import { PlayerHand } from "./playerHand";
 import { Deck } from "./deck";
+
+// Memento for minimal undo state
+export class RoundMemento {
+  hands: { cards: Card[]; unoed: boolean }[];
+  deck: Card[];
+  discardPile: Card[];
+  currentPlayer: number;
+  direction: direction;
+  constructor(
+    hands: { cards: Card[]; unoed: boolean }[],
+    deck: Card[],
+    discardPile: Card[],
+    currentPlayer: number,
+    direction: direction
+  ) {
+    this.hands = hands.map((h) => ({ cards: [...h.cards], unoed: h.unoed }));
+    this.deck = [...deck];
+    this.discardPile = [...discardPile];
+    this.currentPlayer = currentPlayer;
+    this.direction = direction;
+  }
+}
 
 export enum direction {
   Clockwise = 1,
@@ -8,7 +30,7 @@ export enum direction {
 }
 
 export interface RoundInterface {
-  hands: PlayerHand[];
+  hands: { playerHand: PlayerHand; unoed: boolean }[];
   deck: Deck;
   discardPile: Card[];
   currentPlayer: number;
@@ -20,17 +42,43 @@ export interface RoundInterface {
 }
 
 export class Round implements RoundInterface {
-  hands: PlayerHand[];
+  hands: { playerHand: PlayerHand; unoed: boolean }[];
   deck: Deck;
   discardPile: Card[] = [];
   currentPlayer: number = 0;
   direction: direction = direction.Clockwise;
 
-  constructor(numberOfPlayers: number) {
-    this.hands = Array.from(
-      { length: numberOfPlayers },
-      () => new PlayerHand()
+  // Create a memento of the current round state
+  createMemento(): RoundMemento {
+    return new RoundMemento(
+      this.hands.map((h) => ({
+        cards: h.playerHand.getCards(),
+        unoed: h.unoed,
+      })),
+      [...this.deck.cards],
+      [...this.discardPile],
+      this.currentPlayer,
+      this.direction
     );
+  }
+
+  // Restore round state from a memento
+  restoreMemento(memento: RoundMemento): void {
+    this.hands.forEach((h, i) => {
+      h.playerHand.cards = [...memento.hands[i].cards];
+      h.unoed = memento.hands[i].unoed;
+    });
+    this.deck.cards = [...memento.deck];
+    this.discardPile = [...memento.discardPile];
+    this.currentPlayer = memento.currentPlayer;
+    this.direction = memento.direction;
+  }
+
+  constructor(numberOfPlayers: number) {
+    this.hands = Array.from({ length: numberOfPlayers }, () => ({
+      playerHand: new PlayerHand(),
+      unoed: false,
+    }));
     this.deck = new Deck();
 
     const firstCard = this.deck.drawCard();
@@ -40,7 +88,7 @@ export class Round implements RoundInterface {
   playCard(playerIndex: number, card: Card): boolean {
     if (playerIndex !== this.currentPlayer) return false;
     if (!this.isLegalPlay(card)) return false;
-    if (!this.hands[playerIndex].removeCard(card)) return false;
+    if (!this.hands[playerIndex].playerHand.removeCard(card)) return false;
 
     this.discardPile.push(card);
 
@@ -49,12 +97,23 @@ export class Round implements RoundInterface {
     return true;
   }
 
+  callUno(playerIndex: number): void {
+    const hand = this.hands[playerIndex];
+    if (hand.playerHand.size === 1) {
+      hand.unoed = true;
+      return;
+    }
+    for (let i = 0; i < 2; i++) {
+      this.drawCard(playerIndex);
+    }
+  }
+
   drawCard(playerIndex: number): Card | null {
     if (playerIndex !== this.currentPlayer) return null;
     const card = this.deck.drawCard();
     this.nextPlayer();
     if (card) {
-      this.hands[playerIndex].addCard(card);
+      this.hands[playerIndex].playerHand.addCard(card);
       return card;
     } else {
       return null;
@@ -95,7 +154,7 @@ export class Round implements RoundInterface {
         const nextHand = this.hands[this.currentPlayer];
         for (let i = 0; i < 2; i++) {
           const drawn = this.deck.drawCard();
-          if (drawn) nextHand.addCard(drawn);
+          if (drawn) nextHand.playerHand.addCard(drawn);
         }
         break;
       case CardType.WildDrawFour:
@@ -103,10 +162,9 @@ export class Round implements RoundInterface {
         const nextHand4 = this.hands[this.currentPlayer];
         for (let i = 0; i < 4; i++) {
           const drawn = this.deck.drawCard();
-          if (drawn) nextHand4.addCard(drawn);
+          if (drawn) nextHand4.playerHand.addCard(drawn);
         }
         break;
-      // TODO Wild color change
     }
   }
 }

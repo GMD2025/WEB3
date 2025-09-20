@@ -31,6 +31,7 @@ export interface ActionCard extends Card {
 
 export interface WildCard extends Card {
   readonly type: CardType.Wild | CardType.WildDrawFour;
+  chosenColor?: CardColor | undefined;
 }
 
 export function createNumberCard(color: CardColor, number: number): NumberCard {

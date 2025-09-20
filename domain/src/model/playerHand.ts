@@ -31,6 +31,10 @@ export class PlayerHand implements PlayerHandInterface {
   getCards(): Card[] {
     return [...this.cards];
   }
+
+  get size(): number {
+    return this.cards.length;
+  }
 }
 
 function compareCards(a: Card, b: Card): boolean {
