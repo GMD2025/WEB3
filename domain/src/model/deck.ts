@@ -1,69 +1,167 @@
-import {
-  Shuffler,
-  standardRandomizer,
-  standardShuffler,
-} from "../utils/random_utils";
-import * as card from "./card";
+import { Shuffler } from "../utils/random_utils";
+import { Card, Color, Type } from "./card";
 
-export interface DeckInterface {
-  cards: card.Card[];
-  drawCard(): card.Card | undefined;
-}
+export type { Card, Color, Type } from "./card";
 
-export class Deck implements DeckInterface {
-  cards: card.Card[];
+export const colors: Readonly<Color[]> = [
+  "RED",
+  "YELLOW",
+  "GREEN",
+  "BLUE",
+] as const;
+export const types: Readonly<Type[]> = [
+  "NUMBERED",
+  "SKIP",
+  "REVERSE",
+  "DRAW",
+  "WILD",
+  "WILD DRAW",
+] as const;
 
-  constructor(pool?: card.Card[]) {
-    this.cards = pool ? pool : createFullCardPool();
-  }
+export type Deck = {
+  readonly size: number;
+  filter(pred: (card: Card) => boolean): Deck;
+  deal(): Card | undefined;
+  shuffle(shuffler: Shuffler<Card>): void;
+  fromMemento(cards: Record<string, string | number>[]): Deck;
+  toMemento(): Record<string, string | number>[];
+  top(): Card | undefined;
+  draw(count: number): Card[] | undefined;
+  peek(): Card | undefined;
+  addTop(card: Card): void;
+};
 
-  drawCard(): card.Card | undefined {
-    return this.cards.shift();
+export class ArrayDeck implements Deck {
+  private cards: Card[];
+  constructor(cards: Card[] = []) {
+    this.cards = [...cards];
   }
 
   get size(): number {
     return this.cards.length;
   }
 
-  shuffle(shuffler?: Shuffler<card.Card>): void {
-    this.cards = shuffler
-      ? shuffler(this.cards)
-      : standardShuffler(standardRandomizer, this.cards);
+  top(): Card | undefined {
+    return this.cards[0];
+  }
+
+  addTop(card: Card): void {
+    this.cards.unshift(card);
+  }
+
+  peek(): Card | undefined {
+    return this.cards[0];
+  }
+
+  draw(count: number) {
+    const arraycards: Card[] = [];
+    for (let i = 0; i < count; i++) {
+      const card = this.cards.shift();
+      if (card) {
+        arraycards.push(card);
+      }
+    }
+    return arraycards;
+  }
+
+  filter(pred: (card: Card) => boolean): Deck {
+    return new ArrayDeck(this.cards.filter(pred));
+  }
+
+  deal(): Card | undefined {
+    return this.cards.shift();
+  }
+
+  shuffle(shuffler: Shuffler<Card>): void {
+    shuffler(this.cards);
+  }
+
+  fromMemento(cards: Record<string, string | number>[]): Deck {
+    const newCards: Card[] = [];
+    for (const card of cards) {
+      if (typeof card.type !== "string" || !types.includes(card.type as Type)) {
+        throw new Error(`Invalid card type: ${card.type}`);
+      }
+      if (
+        card.type === "NUMBERED" &&
+        (typeof card.color !== "string" ||
+          !colors.includes(card.color as Color) ||
+          typeof card.number !== "number" ||
+          card.number < 0 ||
+          card.number > 9)
+      ) {
+        throw new Error(`Invalid NUMBERED card: ${JSON.stringify(card)}`);
+      }
+      if (
+        card.type === "SKIP" &&
+        (typeof card.color !== "string" ||
+          !colors.includes(card.color as Color))
+      ) {
+        throw new Error(`Invalid SKIP card: ${JSON.stringify(card)}`);
+      }
+      if (
+        card.type === "REVERSE" &&
+        (typeof card.color !== "string" ||
+          !colors.includes(card.color as Color))
+      ) {
+        throw new Error(`Invalid REVERSE card: ${JSON.stringify(card)}`);
+      }
+      if (
+        card.type === "DRAW" &&
+        (typeof card.color !== "string" ||
+          !colors.includes(card.color as Color))
+      ) {
+        throw new Error(`Invalid DRAW card: ${JSON.stringify(card)}`);
+      }
+      newCards.push(card as Card);
+    }
+    return new ArrayDeck(newCards);
+  }
+
+  toMemento(): Record<string, string | number>[] {
+    return this.cards.map((card) => ({ ...card }));
   }
 }
 
-function createFullCardPool(): card.Card[] {
-  const cards: card.Card[] = [];
+export function hasColor(card: Card, color: Color): boolean {
+  return "color" in card && card.color === color;
+}
 
-  for (const color of Object.values(card.CardColor)) {
-    if (color === card.CardColor.Wild) continue;
+export function hasNumber(card: Card, number: number): boolean {
+  return card.type === "NUMBERED" && card.number === number;
+}
 
-    for (let number = 0; number < 10; number++) {
-      cards.push(card.createNumberCard(color, number));
-      if (number == 0) continue;
-      cards.push(card.createNumberCard(color, number));
+export function buildStandardDeck(): Card[] {
+  const cards: Card[] = [];
+
+  for (const color of colors) {
+    cards.push({ type: "NUMBERED", color, number: 0 });
+    for (const n of [1, 2, 3, 4, 5, 6, 7, 8, 9] as const) {
+      cards.push({ type: "NUMBERED", color, number: n });
+      cards.push({ type: "NUMBERED", color, number: n });
     }
+  }
 
-    for (let i = 0; i < 2; i++) {
-      cards.push(card.createActionCard(color, card.CardType.Skip));
-      cards.push(card.createActionCard(color, card.CardType.Reverse));
-      cards.push(card.createActionCard(color, card.CardType.DrawTwo));
-    }
+  for (const color of colors) {
+    cards.push({ type: "SKIP", color }, { type: "SKIP", color });
+    cards.push({ type: "REVERSE", color }, { type: "REVERSE", color });
+    cards.push({ type: "DRAW", color }, { type: "DRAW", color });
   }
 
   for (let i = 0; i < 4; i++) {
-    cards.push(card.createWildCard(card.CardType.Wild));
-    cards.push(card.createWildCard(card.CardType.WildDrawFour));
+    cards.push({ type: "WILD" });
+    cards.push({ type: "WILD DRAW" });
   }
 
-  standardShuffler(standardRandomizer, cards);
   return cards;
 }
 
-// jesus christ just for the sake of tests. They are ... ugh. not flexible.
-export const colors = [
-  card.CardColor.Red,
-  card.CardColor.Yellow,
-  card.CardColor.Green,
-  card.CardColor.Blue,
-];
+export function createFullDeck(): Deck {
+  return new ArrayDeck(buildStandardDeck());
+}
+
+export function createFromMemento(
+  cards: Record<string, string | number>[]
+): Deck {
+  return new ArrayDeck().fromMemento(cards);
+}

@@ -1,64 +1,31 @@
-export enum CardColor {
-  Red = "RED",
-  Yellow = "YELLOW",
-  Green = "GREEN",
-  Blue = "BLUE",
-  Wild = "WILD",
-}
+export type Color = "RED" | "YELLOW" | "GREEN" | "BLUE";
 
-export enum CardType {
-  Number = "NUMBERED",
-  Skip = "SKIP",
-  Reverse = "REVERSE",
-  DrawTwo = "DRAW",
-  Wild = "WILD",
-  WildDrawFour = "WILD DRAW",
-}
+export type Type =
+  | "NUMBERED"
+  | "SKIP"
+  | "REVERSE"
+  | "DRAW"
+  | "WILD"
+  | "WILD DRAW";
 
-export interface Card {
-  readonly color: CardColor;
-  readonly type: CardType;
-}
+export type Numbered = {
+  readonly type: "NUMBERED";
+  readonly color: Color;
+  readonly number: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+};
 
-export interface NumberCard extends Card {
-  readonly type: CardType.Number;
-  readonly number: number;
-}
+export type ColoredAction =
+  | { readonly type: "SKIP"; readonly color: Color }
+  | { readonly type: "REVERSE"; readonly color: Color }
+  | { readonly type: "DRAW"; readonly color: Color };
 
-export interface ActionCard extends Card {
-  readonly type: CardType.Skip | CardType.Reverse | CardType.DrawTwo;
-}
+export type Wild = { readonly type: "WILD" } | { readonly type: "WILD DRAW" };
 
-export interface WildCard extends Card {
-  readonly type: CardType.Wild | CardType.WildDrawFour;
-  chosenColor?: CardColor | undefined;
-}
+export type Card = Numbered | ColoredAction | Wild;
 
-export function createNumberCard(color: CardColor, number: number): NumberCard {
-  return {
-    color,
-    type: CardType.Number,
-    number,
-  };
-}
-
-export function createActionCard(
-  color: CardColor,
-  type: ActionCard["type"]
-): ActionCard {
-  return {
-    color,
-    type,
-  };
-}
-
-export function createWildCard(type: WildCard["type"]): WildCard {
-  return {
-    color: CardColor.Wild,
-    type,
-  };
-}
-
-export function isANumberCard(card: Card): card is NumberCard {
-  return card.type === CardType.Number && "number" in card;
-}
+export const colors: readonly Color[] = [
+  "RED",
+  "YELLOW",
+  "GREEN",
+  "BLUE",
+] as const;

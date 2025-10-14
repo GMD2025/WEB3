@@ -1,20 +1,31 @@
 <script setup lang="ts">
-import {
-  CardColor,
-  CardType,
-  createActionCard,
-  createNumberCard,
-  createWildCard,
-  type Card,
-} from "@domain/model/card";
+import { type Card } from "@domain/model/card";
 import UnoCard from "./components/UnoCard.vue";
 
-const card1: Card = createNumberCard(CardColor.Red, 5);
-const card2: Card = createNumberCard(CardColor.Green, 10);
-const card3: Card = createActionCard(CardColor.Blue, CardType.Skip);
-const card4: Card = createActionCard(CardColor.Yellow, CardType.Reverse);
-const card5: Card = createWildCard(CardType.Wild);
-const card6: Card = createWildCard(CardType.WildDrawFour);
+const card1: Card = {
+  type: "NUMBERED",
+  color: "RED",
+  number: 5,
+};
+const card2: Card = {
+  type: "NUMBERED",
+  color: "GREEN",
+  number: 10,
+};
+const card3: Card = {
+  type: "SKIP",
+  color: "BLUE",
+};
+const card4: Card = {
+  type: "REVERSE",
+  color: "YELLOW",
+};
+const card5: Card = {
+  type: "WILD",
+};
+const card6: Card = {
+  type: "WILD DRAW",
+};
 </script>
 
 <template>
