@@ -18,9 +18,15 @@ export type Card = Numbered | ColoredAction | Wild;
 
 export type BotDifficulty = "easy" | "medium" | "hard";
 
+export interface SerializableCard {
+  type: "NUMBERED" | "SKIP" | "REVERSE" | "DRAW" | "WILD" | "WILD DRAW";
+  color?: Color;
+  number?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+}
+
 export interface BotGameState {
-  hand: Card[];
-  currentCard: Card;
+  hand: SerializableCard[];
+  currentCard: SerializableCard;
   currentColor?: Color;
   playerCount: number;
   playersHandSizes: number[];

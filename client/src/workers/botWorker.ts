@@ -1,5 +1,5 @@
 import type {
-  Card,
+  SerializableCard,
   Color,
   BotDifficulty,
   BotGameState,
@@ -78,18 +78,18 @@ class UnoBot {
   }
 
   private findPlayableCards(
-    hand: Card[],
-    currentCard: Card,
+    hand: SerializableCard[],
+    currentCard: SerializableCard,
     currentColor?: Color,
-  ): Card[] {
+  ): SerializableCard[] {
     return hand.filter((card) =>
       this.canPlayCard(card, currentCard, currentColor),
     );
   }
 
   private canPlayCard(
-    card: Card,
-    currentCard: Card,
+    card: SerializableCard,
+    currentCard: SerializableCard,
     currentColor?: Color,
   ): boolean {
     // Wild cards can always be played
@@ -129,9 +129,9 @@ class UnoBot {
   }
 
   private chooseCard(
-    playableCards: Card[],
+    playableCards: SerializableCard[],
     gameState: BotGameState,
-  ): { card: Card; namedColor?: Color } {
+  ): { card: SerializableCard; namedColor?: Color } {
     const { hand, playersHandSizes, botPlayerIndex } = gameState;
 
     switch (this.difficulty) {
@@ -146,8 +146,8 @@ class UnoBot {
     }
   }
 
-  private chooseCardEasy(playableCards: Card[]): {
-    card: Card;
+  private chooseCardEasy(playableCards: SerializableCard[]): {
+    card: SerializableCard;
     namedColor?: Color;
   } {
     // easy bot
@@ -158,9 +158,9 @@ class UnoBot {
   }
 
   private chooseCardMedium(
-    playableCards: Card[],
+    playableCards: SerializableCard[],
     gameState: BotGameState,
-  ): { card: Card; namedColor?: Color } {
+  ): { card: SerializableCard; namedColor?: Color } {
     const { hand } = gameState;
 
     // Medium bot has some strategy:
@@ -180,7 +180,7 @@ class UnoBot {
       (card) => card.type === "WILD" || card.type === "WILD DRAW",
     );
 
-    let chosenCard: Card;
+    let chosenCard: SerializableCard;
 
     // Prefer action cards, then numbered, then wild
     if (actionCards.length > 0) {
@@ -199,9 +199,9 @@ class UnoBot {
   }
 
   private chooseCardHard(
-    playableCards: Card[],
+    playableCards: SerializableCard[],
     gameState: BotGameState,
-  ): { card: Card; namedColor?: Color } {
+  ): { card: SerializableCard; namedColor?: Color } {
     const { hand, playersHandSizes, botPlayerIndex } = gameState;
 
     // Hard bot is strategic:
@@ -236,9 +236,9 @@ class UnoBot {
   }
 
   private chooseOptimalCard(
-    playableCards: Card[],
-    hand: Card[],
-  ): { card: Card; namedColor?: Color } {
+    playableCards: SerializableCard[],
+    hand: SerializableCard[],
+  ): { card: SerializableCard; namedColor?: Color } {
     let bestCard = playableCards[0]!;
     let bestScore = -1;
 
@@ -270,10 +270,10 @@ class UnoBot {
     return { card: bestCard, namedColor };
   }
 
-  private getCardScore(card: Card): number {
+  private getCardScore(card: SerializableCard): number {
     switch (card.type) {
       case "NUMBERED":
-        return "number" in card ? card.number : 0;
+        return card.number ?? 0;
       case "SKIP":
       case "REVERSE":
       case "DRAW":
@@ -286,11 +286,11 @@ class UnoBot {
     }
   }
 
-  private isWild(card: Card): boolean {
+  private isWild(card: SerializableCard): boolean {
     return card.type === "WILD" || card.type === "WILD DRAW";
   }
 
-  private chooseBestColor(hand: Card[]): Color {
+  private chooseBestColor(hand: SerializableCard[]): Color {
     const colorCounts: Record<Color, number> = {
       RED: 0,
       YELLOW: 0,
@@ -299,7 +299,7 @@ class UnoBot {
     };
 
     hand.forEach((card) => {
-      if ("color" in card) {
+      if (card.color) {
         colorCounts[card.color]++;
       }
     });

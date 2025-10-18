@@ -122,7 +122,6 @@ class GameStateManager {
         }
       }
 
-
       const playerNames = config.players.map((p) => p.name);
       const game = createUnoGame(playerNames, config.targetScore);
 
@@ -320,9 +319,22 @@ class GameStateManager {
     const discardPile = round.discardPile();
     const topCard = discardPile?.peek();
 
+    const hand = round.playerHand(bot.playerIndex).map((card) => ({
+      type: card.type,
+      color: "color" in card ? card.color : undefined,
+      number: "number" in card ? card.number : undefined,
+    }));
+
+    const currentCard = topCard || this.state.lastPlayedCard!;
+    const plainCurrentCard = {
+      type: currentCard.type,
+      color: "color" in currentCard ? currentCard.color : undefined,
+      number: "number" in currentCard ? currentCard.number : undefined,
+    };
+
     return {
-      hand: round.playerHand(bot.playerIndex),
-      currentCard: topCard || this.state.lastPlayedCard!,
+      hand,
+      currentCard: plainCurrentCard,
       currentColor: this.state.currentColor,
       playerCount: this.state.players.length,
       playersHandSizes: this.state.players.map(
