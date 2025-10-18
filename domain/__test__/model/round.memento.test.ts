@@ -27,7 +27,7 @@ const memento = {
   currentColor: 'BLUE',
   currentDirection: 'clockwise',
   dealer: 2,
-  playerInTurn: 0      
+  playerInTurn: 0
 }
 
 describe("create round from valid memento", () => {
