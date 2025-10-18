@@ -1,12 +1,12 @@
 <template>
   <div class="game-screen">
-    <div v-if="!gameStateManager.isGameActive.value" class="no-game">
+    <div v-if="!gameStateManager.isGameActive.value && gameStateManager.winner.value === undefined" class="no-game">
       <h2>No Active Game</h2>
       <p>Please start a new game from the setup screen.</p>
       <router-link to="/" class="btn btn-primary">Go to Setup</router-link>
     </div>
 
-    <div v-else class="game-container">
+    <div v-else-if="gameStateManager.isGameActive.value" class="game-container">
       <header class="game-header">
         <div class="game-info">
           <h1>UNO Game</h1>
@@ -35,6 +35,12 @@
             class="btn btn-secondary"
           >
             Menu
+          </button>
+          <button
+            @click="debugGameState"
+            class="btn btn-warning"
+          >
+            Debug
           </button>
         </div>
       </header>
@@ -181,36 +187,19 @@
           </div>
         </div>
       </div>
-
-      <div
-        v-if="gameStateManager.winner.value !== undefined"
-        class="game-end-overlay"
-      >
-        <div class="game-end-modal">
-          <h2>🎉 Game Over! 🎉</h2>
-          <p class="winner-text">{{ getWinnerName() }} wins the game!</p>
-          <div class="final-scores">
-            <h3>Final Scores:</h3>
-            <div
-              v-for="(player, index) in gameStateManager.players.value"
-              :key="index"
-              class="score-item"
-            >
-              <span
-                >{{ player.name }}:
-                {{ gameStateManager.scores.value[index] || 0 }}</span
-              >
-            </div>
-          </div>
-          <div class="end-actions">
-            <button @click="startNewGame" class="btn btn-primary">
-              New Game
-            </button>
-            <router-link to="/" class="btn btn-secondary">Setup</router-link>
-          </div>
-        </div>
-      </div>
     </div>
+
+    <GameOver
+      v-if="gameStateManager.winner.value !== undefined"
+      :winner-index="gameStateManager.winner.value"
+      :players="gameStateManager.players.value"
+      :scores="gameStateManager.scores.value"
+      :target-score="gameStateManager.targetScore.value"
+      :game-start-time="gameStateManager.gameStartTime.value || undefined"
+      @new-game="startNewGame"
+      @back-to-setup="goToSetup"
+      @main-menu="goToSetup"
+    />
   </div>
 </template>
 
@@ -218,6 +207,7 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import UnoCard from "./UnoCard.vue";
+import GameOver from "./GameOver.vue";
 import { gameStateManager } from "../services/gameStateManager";
 import type { Color } from "../types/gameTypes";
 
@@ -362,7 +352,36 @@ function startNewGame(): void {
   router.push("/");
 }
 
-// Handle escape key to close modals
+function goToSetup(): void {
+  router.push("/");
+}
+
+function debugGameState(): void {
+  console.log("=== GAME STATE DEBUG ===");
+  console.log("Game active:", gameStateManager.isGameActive.value);
+  console.log("Current game:", gameStateManager.currentGame.value);
+  console.log("Current round:", gameStateManager.currentRound.value);
+  console.log("Players:", gameStateManager.players.value);
+  console.log("Scores:", gameStateManager.scores.value);
+  console.log("Target score:", gameStateManager.targetScore.value);
+  console.log("Winner:", gameStateManager.winner.value);
+  console.log("Round winner:", gameStateManager.roundWinner.value);
+  
+  if (gameStateManager.currentGame.value) {
+    console.log("Individual scores from game:");
+    for (let i = 0; i < gameStateManager.players.value.length; i++) {
+      console.log(`  Player ${i}: ${gameStateManager.currentGame.value.score(i)}`);
+    }
+  }
+  
+  if (gameStateManager.currentRound.value) {
+    console.log("Round ended:", gameStateManager.currentRound.value.hasEnded());
+    console.log("Round winner:", gameStateManager.currentRound.value.winner());
+    console.log("Round score:", gameStateManager.currentRound.value.score());
+  }
+  console.log("========================");
+}
+
 function handleKeyPress(event: KeyboardEvent): void {
   if (event.key === "Escape") {
     showGameMenu.value = false;
@@ -373,7 +392,6 @@ function handleKeyPress(event: KeyboardEvent): void {
 onMounted(() => {
   document.addEventListener("keydown", handleKeyPress);
 
-  // If no active game, redirect to setup
   if (!gameStateManager.isGameActive.value) {
     router.push("/");
   }
@@ -737,57 +755,7 @@ onUnmounted(() => {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.game-end-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
 
-.game-end-modal {
-  background: white;
-  color: #333;
-  padding: 40px;
-  border-radius: 16px;
-  text-align: center;
-  max-width: 400px;
-  width: 90%;
-}
-
-.winner-text {
-  font-size: 1.3rem;
-  margin: 20px 0;
-  color: #16a34a;
-  font-weight: bold;
-}
-
-.final-scores {
-  margin: 20px 0;
-}
-
-.final-scores h3 {
-  margin-bottom: 15px;
-  color: #333;
-}
-
-.score-item {
-  display: block;
-  padding: 8px 0;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.end-actions {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  margin-top: 30px;
-}
 
 .btn {
   padding: 12px 24px;

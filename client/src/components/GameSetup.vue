@@ -11,9 +11,9 @@
             id="target-score"
             v-model.number="gameConfig.targetScore"
             type="number"
-            min="100"
-            max="1000"
-            step="50"
+            min="50"
+            max="500"
+            step="25"
             class="input"
           />
         </div>
@@ -133,7 +133,7 @@ const router = useRouter();
 const isStarting = ref(false);
 
 const gameConfig = reactive<GameConfig>({
-  targetScore: 500,
+  targetScore: 100,
   players: [
     { name: "You", isBot: false },
     { name: "Bot 1", isBot: true, botDifficulty: "medium" },

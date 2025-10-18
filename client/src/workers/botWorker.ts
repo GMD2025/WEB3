@@ -30,7 +30,18 @@ class UnoBot {
     }
 
     if (hand.length === 2) {
-      return { type: "sayUno" };
+      // Bots sometimes forget to say Uno based on difficulty
+      const unoChance =
+        this.difficulty === "easy"
+          ? 0.4  // Easy bots forget often
+          : this.difficulty === "medium"
+            ? 0.7  // Medium bots sometimes forget
+            : 0.9; // Hard bots rarely forget
+
+      if (Math.random() < unoChance) {
+        return { type: "sayUno" };
+      }
+      // Bot forgot to say Uno, continue with regular play logic
     }
 
     const playableCards = this.findPlayableCards(
@@ -56,21 +67,36 @@ class UnoBot {
   private checkUnoFailure(gameState: BotGameState): BotAction | null {
     const { playersHandSizes, botPlayerIndex, playerCount } = gameState;
 
-    const prevPlayerIndex = (botPlayerIndex - 1 + playerCount) % playerCount;
+    // Check all players for UNO failure (having 1 card but didn't say UNO)
+    for (let i = 0; i < playerCount; i++) {
+      if (i === botPlayerIndex) continue; // Don't check self
+      
+      if (playersHandSizes[i] === 1) {
+        // Base catch chance varies by difficulty
+        let baseCatchChance =
+          this.difficulty === "easy"
+            ? 0.2  // Easy bots rarely catch
+            : this.difficulty === "medium"
+              ? 0.5  // Medium bots sometimes catch
+              : 0.8; // Hard bots usually catch
 
-    if (playersHandSizes[prevPlayerIndex] === 1) {
-      const catchChance =
-        this.difficulty === "easy"
-          ? 0.3
-          : this.difficulty === "medium"
-            ? 0.7
-            : 0.9;
+        // Reduce chance for players who aren't immediately adjacent
+        const prevPlayerIndex = (botPlayerIndex - 1 + playerCount) % playerCount;
+        const nextPlayerIndex = (botPlayerIndex + 1) % playerCount;
+        
+        if (i !== prevPlayerIndex && i !== nextPlayerIndex) {
+          baseCatchChance *= 0.6; // Less likely to notice distant players
+        }
 
-      if (Math.random() < catchChance) {
-        return {
-          type: "catchUnoFailure",
-          accused: prevPlayerIndex,
-        };
+        // Add some randomness - bots might miss obvious failures
+        const finalCatchChance = baseCatchChance * (0.7 + Math.random() * 0.3);
+
+        if (Math.random() < finalCatchChance) {
+          return {
+            type: "catchUnoFailure",
+            accused: i,
+          };
+        }
       }
     }
 

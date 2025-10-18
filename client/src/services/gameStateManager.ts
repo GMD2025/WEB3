@@ -29,6 +29,9 @@ export interface GameState {
   gameLog: string[];
   winner: number | undefined;
   roundWinner: number | undefined;
+  gameStartTime: Date | null;
+  targetScore: number;
+  scores: number[];
 }
 
 class GameStateManager {
@@ -45,9 +48,11 @@ class GameStateManager {
     gameLog: [],
     winner: undefined,
     roundWinner: undefined,
+    gameStartTime: null,
+    targetScore: 500,
+    scores: [],
   });
 
-  // Computed properties for easy access
   readonly isGameActive = computed(() => this.state.isGameActive);
   readonly currentGame = computed(() => this.state.currentGame);
   readonly currentRound = computed(() => this.state.currentRound);
@@ -60,8 +65,9 @@ class GameStateManager {
   readonly gameLog = computed(() => this.state.gameLog);
   readonly winner = computed(() => this.state.winner);
   readonly roundWinner = computed(() => this.state.roundWinner);
+  readonly gameStartTime = computed(() => this.state.gameStartTime);
+  readonly targetScore = computed(() => this.state.targetScore);
 
-  // Derived computed properties
   readonly currentPlayerIndex = computed(() =>
     this.state.currentRound?.playerInTurn(),
   );
@@ -76,29 +82,21 @@ class GameStateManager {
     () =>
       this.state.currentRound?.playerHand(this.state.humanPlayerIndex) || [],
   );
-  readonly scores = computed(() => {
-    if (!this.state.currentGame) return [];
-    return this.state.players.map((_, index) =>
-      this.state.currentGame!.score(index),
-    );
-  });
+  readonly scores = computed(() => this.state.scores);
 
   async startGame(config: GameConfig): Promise<void> {
     try {
       this.addLog("Setting up game...");
 
-      // Validate configuration
       if (config.players.length < 2 || config.players.length > 4) {
         throw new Error("Game must have 2-4 players");
       }
 
-      // Find human player (first non-bot player)
       const humanIndex = config.players.findIndex((p) => !p.isBot);
       if (humanIndex === -1) {
         throw new Error("At least one human player is required");
       }
 
-      // Create bot players
       this.addLog("Creating bot players...");
       const botPlayers: BotPlayer[] = [];
       for (let i = 0; i < config.players.length; i++) {
@@ -133,6 +131,9 @@ class GameStateManager {
       this.state.isGameActive = true;
       this.state.winner = undefined;
       this.state.roundWinner = undefined;
+      this.state.gameStartTime = new Date();
+      this.state.targetScore = config.targetScore;
+      this.state.scores = Array(config.players.length).fill(0);
 
       this.state.currentRound.onEnd(({ winner }) => {
         this.handleRoundEnd(winner);
@@ -183,6 +184,16 @@ class GameStateManager {
       );
       if (namedColor) {
         this.addLog(`Color changed to ${namedColor}`);
+      }
+
+      const handSize = this.state.currentRound.playerHand(
+        this.state.humanPlayerIndex,
+      ).length;
+      console.log(`Human has ${handSize} cards left after playing`);
+      if (this.state.currentRound.hasEnded()) {
+        console.log(
+          `Round has ended! Winner: ${this.state.currentRound.winner()}`,
+        );
       }
 
       setTimeout(() => this.processTurn(), 500);
@@ -373,6 +384,12 @@ class GameStateManager {
             if (action.namedColor) {
               this.addLog(`${bot.name} changed color to ${action.namedColor}`);
             }
+
+            const handSize = round.playerHand(bot.playerIndex).length;
+            console.log(`${bot.name} has ${handSize} cards left after playing`);
+            if (round.hasEnded()) {
+              console.log(`Round has ended! Winner: ${round.winner()}`);
+            }
           }
           break;
 
@@ -424,6 +441,15 @@ class GameStateManager {
 
     this.state.winner = this.state.currentGame?.winner();
     this.state.roundWinner = this.state.currentRound.winner();
+    this.syncScores();
+  }
+
+  private syncScores(): void {
+    if (!this.state.currentGame) return;
+
+    for (let i = 0; i < this.state.players.length; i++) {
+      this.state.scores[i] = this.state.currentGame.score(i);
+    }
   }
 
   private handleRoundEnd(winner: number): void {
@@ -433,7 +459,35 @@ class GameStateManager {
       this.addLog(`Round ended! ${winnerPlayer.name} wins the round!`);
     }
 
+    const roundScore = this.state.currentRound?.score() || 0;
+    console.log(`Round ended. Winner: ${winner}, Round score: ${roundScore}`);
+
+    if (this.state.currentGame) {
+      console.log("Current game scores before round end:");
+      for (let i = 0; i < this.state.players.length; i++) {
+        const currentScore = this.state.currentGame.score(i);
+        console.log(`  ${this.state.players[i]?.name}: ${currentScore}`);
+      }
+      console.log(`Target score: ${this.state.currentGame.targetScore}`);
+    }
+
+    setTimeout(() => {
+      if (this.state.currentGame) {
+        console.log("Current game scores AFTER round end:");
+        for (let i = 0; i < this.state.players.length; i++) {
+          const currentScore = this.state.currentGame.score(i);
+          console.log(`  ${this.state.players[i]?.name}: ${currentScore}`);
+        }
+
+        // force Vue reactivity update by syncing scores
+        this.syncScores();
+        this.updateGameState();
+      }
+    }, 100);
+
     const gameWinner = this.state.currentGame?.winner();
+    console.log(`Game winner check: ${gameWinner}`);
+
     if (gameWinner !== undefined) {
       this.state.winner = gameWinner;
       this.state.isGameActive = false;
@@ -441,6 +495,7 @@ class GameStateManager {
       if (gameWinnerPlayer) {
         this.addLog(`Game Over! ${gameWinnerPlayer.name} wins the game!`);
       }
+      console.log(`Game over! Winner: ${gameWinnerPlayer?.name}`);
       this.cleanup();
     } else {
       setTimeout(() => {
@@ -488,6 +543,9 @@ class GameStateManager {
     this.state.roundWinner = undefined;
     this.state.lastPlayedCard = null;
     this.state.currentColor = undefined;
+    this.state.gameStartTime = null;
+    this.state.targetScore = 500;
+    this.state.scores = [];
   }
 }
 
