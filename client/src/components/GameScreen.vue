@@ -1,6 +1,12 @@
 <template>
   <div class="game-screen">
-    <div v-if="!gameStateManager.isGameActive.value && gameStateManager.winner.value === undefined" class="no-game">
+    <div
+      v-if="
+        !gameStateManager.isGameActive.value &&
+        gameStateManager.winner.value === undefined
+      "
+      class="no-game"
+    >
       <h2>No Active Game</h2>
       <p>Please start a new game from the setup screen.</p>
       <router-link to="/" class="btn btn-primary">Go to Setup</router-link>
@@ -36,12 +42,7 @@
           >
             Menu
           </button>
-          <button
-            @click="debugGameState"
-            class="btn btn-warning"
-          >
-            Debug
-          </button>
+          <button @click="debugGameState" class="btn btn-warning">Debug</button>
         </div>
       </header>
 
@@ -366,14 +367,16 @@ function debugGameState(): void {
   console.log("Target score:", gameStateManager.targetScore.value);
   console.log("Winner:", gameStateManager.winner.value);
   console.log("Round winner:", gameStateManager.roundWinner.value);
-  
+
   if (gameStateManager.currentGame.value) {
     console.log("Individual scores from game:");
     for (let i = 0; i < gameStateManager.players.value.length; i++) {
-      console.log(`  Player ${i}: ${gameStateManager.currentGame.value.score(i)}`);
+      console.log(
+        `  Player ${i}: ${gameStateManager.currentGame.value.score(i)}`,
+      );
     }
   }
-  
+
   if (gameStateManager.currentRound.value) {
     console.log("Round ended:", gameStateManager.currentRound.value.hasEnded());
     console.log("Round winner:", gameStateManager.currentRound.value.winner());
@@ -754,8 +757,6 @@ onUnmounted(() => {
   padding: 4px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
-
-
 
 .btn {
   padding: 12px 24px;

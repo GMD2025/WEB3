@@ -21,11 +21,15 @@
             >
               <div class="player-info">
                 <div class="player-avatar">
-                  {{ index === winnerIndex ? "👑" : getPlayerEmoji(player, index) }}
+                  {{
+                    index === winnerIndex ? "👑" : getPlayerEmoji(player, index)
+                  }}
                 </div>
                 <div class="player-details">
                   <span class="player-name">{{ player.name }}</span>
-                  <span class="player-type">{{ player.isBot ? "Bot" : "Human" }}</span>
+                  <span class="player-type">{{
+                    player.isBot ? "Bot" : "Human"
+                  }}</span>
                 </div>
               </div>
               <div class="score-value">{{ scores[index] || 0 }}</div>
@@ -80,8 +84,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { PlayerConfig } from '../services/gameStateManager';
+import { computed } from "vue";
+import type { PlayerConfig } from "../services/gameStateManager";
 
 interface Props {
   winnerIndex: number;
@@ -101,17 +105,17 @@ const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const winnerName = computed(() => {
-  return props.players[props.winnerIndex]?.name || 'Unknown';
+  return props.players[props.winnerIndex]?.name || "Unknown";
 });
 
 const gameDuration = computed(() => {
-  if (!props.gameStartTime) return 'Unknown';
-  
+  if (!props.gameStartTime) return "Unknown";
+
   const duration = Date.now() - props.gameStartTime.getTime();
   const minutes = Math.floor(duration / 60000);
   const seconds = Math.floor((duration % 60000) / 1000);
-  
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 });
 
 const roundCount = computed(() => {
@@ -122,50 +126,60 @@ const roundCount = computed(() => {
 function getPlayerEmoji(player: PlayerConfig, index: number): string {
   if (player.isBot) {
     switch (player.botDifficulty) {
-      case 'easy': return '🤖';
-      case 'medium': return '🔧';
-      case 'hard': return '⚡';
-      default: return '🤖';
+      case "easy":
+        return "🤖";
+      case "medium":
+        return "🔧";
+      case "hard":
+        return "⚡";
+      default:
+        return "🤖";
     }
   }
-  
-  const humanEmojis = ['😊', '😎', '🎯', '🎪'];
-  return humanEmojis[index % humanEmojis.length] || '😊';
+
+  const humanEmojis = ["😊", "😎", "🎯", "🎪"];
+  return humanEmojis[index % humanEmojis.length] || "😊";
 }
 
 function getVictoryMessage(): string {
   const winner = props.players[props.winnerIndex];
-  if (!winner) return 'Congratulations!';
-  
+  if (!winner) return "Congratulations!";
+
   if (winner.isBot) {
     const messages = [
       `${winner.name} dominated this game!`,
       `The AI has proven its superiority!`,
       `${winner.name} calculated the perfect victory!`,
-      `Beep boop! ${winner.name} wins!`
+      `Beep boop! ${winner.name} wins!`,
     ];
-    return messages[Math.floor(Math.random() * messages.length)] || `${winner.name} wins!`;
+    return (
+      messages[Math.floor(Math.random() * messages.length)] ||
+      `${winner.name} wins!`
+    );
   } else {
     const messages = [
       `Amazing victory, ${winner.name}!`,
       `${winner.name} showed incredible skill!`,
       `Human ingenuity triumphs!`,
-      `Congratulations on your victory, ${winner.name}!`
+      `Congratulations on your victory, ${winner.name}!`,
     ];
-    return messages[Math.floor(Math.random() * messages.length)] || `Congratulations, ${winner.name}!`;
+    return (
+      messages[Math.floor(Math.random() * messages.length)] ||
+      `Congratulations, ${winner.name}!`
+    );
   }
 }
 
 function onNewGame() {
-  emit('newGame');
+  emit("newGame");
 }
 
 function onBackToSetup() {
-  emit('backToSetup');
+  emit("backToSetup");
 }
 
 function onMainMenu() {
-  emit('mainMenu');
+  emit("mainMenu");
 }
 </script>
 
@@ -269,7 +283,11 @@ function onMainMenu() {
 }
 
 .score-item.winner {
-  background: linear-gradient(90deg, rgba(255, 215, 0, 0.3), rgba(255, 215, 0, 0.1));
+  background: linear-gradient(
+    90deg,
+    rgba(255, 215, 0, 0.3),
+    rgba(255, 215, 0, 0.1)
+  );
   border: 2px solid #ffd700;
   transform: scale(1.02);
 }
@@ -458,10 +476,15 @@ function onMainMenu() {
 }
 
 @keyframes bounce {
-  0%, 20%, 53%, 80%, 100% {
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
     transform: translateY(0);
   }
-  40%, 43% {
+  40%,
+  43% {
     transform: translateY(-10px);
   }
   70% {
