@@ -186,7 +186,7 @@ export class RoundClass implements Round {
       this.playersArray[player].saidUno = true;
 
       if (isPendingAccused) {
-        this.uno.satisfied = true;
+        // this.uno.satisfied = true;
       }
     }
   }
