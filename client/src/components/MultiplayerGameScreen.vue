@@ -220,7 +220,9 @@ const canDraw = multiplayerGameStateManager.canDraw;
 const actions = multiplayerGameStateManager.actions;
 
 const canSayUno = computed(() => {
-  return (myHand.value.length === 2 || myHand.value.length === 1) && isMyTurn.value;
+  return (
+    (myHand.value.length === 2 || myHand.value.length === 1) && isMyTurn.value
+  );
 });
 
 const canPlayAnyCard = computed(() => {

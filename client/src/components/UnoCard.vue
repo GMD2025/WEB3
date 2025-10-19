@@ -7,7 +7,11 @@ defineProps<{
 
 function getCardColor(card: Card): string {
   const cardType = (card as any).type;
-  if (cardType === "WILD" || cardType === "WILD_DRAW" || cardType === "WILD DRAW") {
+  if (
+    cardType === "WILD" ||
+    cardType === "WILD_DRAW" ||
+    cardType === "WILD DRAW"
+  ) {
     return "#000000";
   }
 
@@ -27,7 +31,11 @@ function getCardColor(card: Card): string {
 
 function getTextColor(card: Card): string {
   const cardType = (card as any).type;
-  if (cardType === "WILD" || cardType === "WILD_DRAW" || cardType === "WILD DRAW") {
+  if (
+    cardType === "WILD" ||
+    cardType === "WILD_DRAW" ||
+    cardType === "WILD DRAW"
+  ) {
     return "#FFFFFF";
   }
   if ("color" in card && card.color === "YELLOW") {
@@ -38,7 +46,9 @@ function getTextColor(card: Card): string {
 
 function isWildCard(card: Card): boolean {
   const cardType = (card as any).type;
-  return cardType === "WILD" || cardType === "WILD_DRAW" || cardType === "WILD DRAW";
+  return (
+    cardType === "WILD" || cardType === "WILD_DRAW" || cardType === "WILD DRAW"
+  );
 }
 
 function getCardSymbol(card: Card): string {

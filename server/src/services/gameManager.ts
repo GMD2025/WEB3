@@ -154,6 +154,9 @@ export class GameManager {
     game.state = "IN_PROGRESS";
     game.isStarted = true;
 
+    // Register callback for when rounds end
+    this.registerRoundEndCallback(game);
+
     this.addGameAction(game, {
       type: "GAME_STARTED",
       playerId: game.players[0].id,
@@ -361,27 +364,43 @@ export class GameManager {
   }
 
   private checkRoundEnd(game: MultiplayerGame): void {
+    // Score updates are now handled by round end callbacks
+    // This method is kept for backward compatibility but does nothing
+    return;
+  }
+
+  private registerRoundEndCallback(game: MultiplayerGame): void {
     if (!game.domainGame) return;
 
     const round = game.domainGame.currentRound();
-    if (!round || !round.hasEnded()) return;
+    if (!round) return;
 
-    const winnerIndex = round.winner();
-    if (winnerIndex !== undefined) {
+    console.log("Registering round end callback for game:", game.id);
+
+    round.onEnd(({ winner }) => {
+      console.log("Round ended! Winner index:", winner);
+
+      // Update scores from domain game
       for (let i = 0; i < game.players.length; i++) {
-        game.players[i].score = game.domainGame.score(i);
+        const oldScore = game.players[i].score;
+        game.players[i].score = game.domainGame!.score(i);
+        console.log(
+          `Player ${game.players[i].name}: ${oldScore} -> ${game.players[i].score}`,
+        );
       }
 
       this.addGameAction(game, {
         type: "ROUND_ENDED",
-        playerId: game.players[winnerIndex].id,
-        playerName: game.players[winnerIndex].name,
-        message: `${game.players[winnerIndex].name} won the round!`,
+        playerId: game.players[winner].id,
+        playerName: game.players[winner].name,
+        message: `${game.players[winner].name} won the round! Points: ${game.players[winner].score}`,
         timestamp: new Date().toISOString(),
       });
 
-      const gameWinner = game.domainGame.winner();
+      // Check if there's a game winner
+      const gameWinner = game.domainGame!.winner();
       if (gameWinner !== undefined) {
+        console.log("Game winner:", game.players[gameWinner].name);
         game.state = "FINISHED";
         game.isFinished = true;
 
@@ -392,7 +411,11 @@ export class GameManager {
           message: `${game.players[gameWinner].name} won the game!`,
           timestamp: new Date().toISOString(),
         });
+      } else {
+        // New round started, register callback for it too
+        console.log("Starting new round...");
+        this.registerRoundEndCallback(game);
       }
-    }
+    });
   }
 }

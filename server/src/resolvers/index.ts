@@ -263,7 +263,7 @@ export const resolvers = {
       const playerHands = game.players.map((player, index) => {
         const hand = round.playerHand(index);
         const playerDetails = (round as any).playersArray[index];
-        
+
         return {
           playerId: player.id,
           cards: hand,
