@@ -40,7 +40,7 @@ export const resolvers = {
     ) => {
       const game = gameManager.createGame(playerName, targetScore);
 
-      await pubSub.publish(PubSubManager.GAME_UPDATED, { gameUpdated: game });
+      await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${game.id}`, { gameUpdated: game });
 
       return game;
     },
@@ -56,11 +56,11 @@ export const resolvers = {
           throw new Error("Game not found");
         }
 
-        await pubSub.publish(PubSubManager.GAME_UPDATED, { gameUpdated: game });
+        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, { gameUpdated: game });
 
         if (game.actions.length > 0) {
           const latestAction = game.actions[game.actions.length - 1];
-          await pubSub.publish(PubSubManager.GAME_ACTION, {
+          await pubSub.publish(`${PubSubManager.GAME_ACTION}_${gameId}`, {
             gameAction: latestAction,
           });
         }
@@ -101,11 +101,11 @@ export const resolvers = {
       }
 
       if (result.success) {
-        await pubSub.publish(PubSubManager.GAME_UPDATED, { gameUpdated: game });
+        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, { gameUpdated: game });
 
         if (game.actions.length > 0) {
           const latestAction = game.actions[game.actions.length - 1];
-          await pubSub.publish(PubSubManager.GAME_ACTION, {
+          await pubSub.publish(`${PubSubManager.GAME_ACTION}_${gameId}`, {
             gameAction: latestAction,
           });
         }
@@ -131,11 +131,11 @@ export const resolvers = {
       }
 
       if (result.success) {
-        await pubSub.publish(PubSubManager.GAME_UPDATED, { gameUpdated: game });
+        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, { gameUpdated: game });
 
         if (game.actions.length > 0) {
           const latestAction = game.actions[game.actions.length - 1];
-          await pubSub.publish(PubSubManager.GAME_ACTION, {
+          await pubSub.publish(`${PubSubManager.GAME_ACTION}_${gameId}`, {
             gameAction: latestAction,
           });
         }
@@ -161,11 +161,11 @@ export const resolvers = {
       }
 
       if (result.success) {
-        await pubSub.publish(PubSubManager.GAME_UPDATED, { gameUpdated: game });
+        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, { gameUpdated: game });
 
         if (game.actions.length > 0) {
           const latestAction = game.actions[game.actions.length - 1];
-          await pubSub.publish(PubSubManager.GAME_ACTION, {
+          await pubSub.publish(`${PubSubManager.GAME_ACTION}_${gameId}`, {
             gameAction: latestAction,
           });
         }
@@ -199,11 +199,11 @@ export const resolvers = {
       }
 
       if (result.success) {
-        await pubSub.publish(PubSubManager.GAME_UPDATED, { gameUpdated: game });
+        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, { gameUpdated: game });
 
         if (game.actions.length > 0) {
           const latestAction = game.actions[game.actions.length - 1];
-          await pubSub.publish(PubSubManager.GAME_ACTION, {
+          await pubSub.publish(`${PubSubManager.GAME_ACTION}_${gameId}`, {
             gameAction: latestAction,
           });
         }
