@@ -40,7 +40,9 @@ export const resolvers = {
     ) => {
       const game = gameManager.createGame(playerName, targetScore);
 
-      await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${game.id}`, { gameUpdated: game });
+      await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${game.id}`, {
+        gameUpdated: game,
+      });
 
       return game;
     },
@@ -56,7 +58,9 @@ export const resolvers = {
           throw new Error("Game not found");
         }
 
-        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, { gameUpdated: game });
+        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, {
+          gameUpdated: game,
+        });
 
         if (game.actions.length > 0) {
           const latestAction = game.actions[game.actions.length - 1];
@@ -101,7 +105,9 @@ export const resolvers = {
       }
 
       if (result.success) {
-        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, { gameUpdated: game });
+        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, {
+          gameUpdated: game,
+        });
 
         if (game.actions.length > 0) {
           const latestAction = game.actions[game.actions.length - 1];
@@ -131,7 +137,9 @@ export const resolvers = {
       }
 
       if (result.success) {
-        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, { gameUpdated: game });
+        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, {
+          gameUpdated: game,
+        });
 
         if (game.actions.length > 0) {
           const latestAction = game.actions[game.actions.length - 1];
@@ -161,7 +169,9 @@ export const resolvers = {
       }
 
       if (result.success) {
-        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, { gameUpdated: game });
+        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, {
+          gameUpdated: game,
+        });
 
         if (game.actions.length > 0) {
           const latestAction = game.actions[game.actions.length - 1];
@@ -199,7 +209,9 @@ export const resolvers = {
       }
 
       if (result.success) {
-        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, { gameUpdated: game });
+        await pubSub.publish(`${PubSubManager.GAME_UPDATED}_${gameId}`, {
+          gameUpdated: game,
+        });
 
         if (game.actions.length > 0) {
           const latestAction = game.actions[game.actions.length - 1];
@@ -248,12 +260,17 @@ export const resolvers = {
       const round = game.domainGame.currentRound() as RoundClass;
       if (!round) return null;
 
-      const playerHands = game.players.map((player, index) => ({
-        playerId: player.id,
-        cards: round.playerHand(index),
-        cardCount: round.playerHand(index).length,
-        hasUno: round.playerHand(index).length === 1,
-      }));
+      const playerHands = game.players.map((player, index) => {
+        const hand = round.playerHand(index);
+        const playerDetails = (round as any).playersArray[index];
+        
+        return {
+          playerId: player.id,
+          cards: hand,
+          cardCount: hand.length,
+          hasUno: playerDetails?.saidUno || false,
+        };
+      });
 
       return {
         dealer: round.dealer,

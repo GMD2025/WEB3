@@ -338,7 +338,7 @@ class MultiplayerGameStateManager {
     this.subscriptions = [];
 
     // Subscribe to game updates
-    console.log('Subscribing to game updates for gameId:', gameId);
+    console.log("Subscribing to game updates for gameId:", gameId);
     const gameUpdateSub = apolloClient
       .subscribe({
         query: GAME_UPDATED,
@@ -346,7 +346,10 @@ class MultiplayerGameStateManager {
       })
       .subscribe({
         next: (result) => {
-          console.log('Game update received via subscription:', result.data?.gameUpdated);
+          console.log(
+            "Game update received via subscription:",
+            result.data?.gameUpdated,
+          );
           if (result.data?.gameUpdated) {
             this.currentGame.value = result.data.gameUpdated;
           }
@@ -357,7 +360,7 @@ class MultiplayerGameStateManager {
       });
 
     // Subscribe to game actions
-    console.log('Subscribing to game actions for gameId:', gameId);
+    console.log("Subscribing to game actions for gameId:", gameId);
     const gameActionSub = apolloClient
       .subscribe({
         query: GAME_ACTION,
@@ -365,7 +368,10 @@ class MultiplayerGameStateManager {
       })
       .subscribe({
         next: (result) => {
-          console.log('Game action received via subscription:', result.data?.gameAction);
+          console.log(
+            "Game action received via subscription:",
+            result.data?.gameAction,
+          );
           if (result.data?.gameAction) {
             this.gameActions.value.push(result.data.gameAction);
           }

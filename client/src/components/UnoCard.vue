@@ -6,11 +6,12 @@ defineProps<{
 }>();
 
 function getCardColor(card: Card): string {
-  if (card.type === "WILD" || card.type === "WILD DRAW") {
+  const cardType = (card as any).type;
+  if (cardType === "WILD" || cardType === "WILD_DRAW" || cardType === "WILD DRAW") {
     return "#000000";
   }
 
-  switch (card.color) {
+  switch ((card as any).color) {
     case "RED":
       return "#E53935";
     case "YELLOW":
@@ -25,7 +26,8 @@ function getCardColor(card: Card): string {
 }
 
 function getTextColor(card: Card): string {
-  if (card.type === "WILD" || card.type === "WILD DRAW") {
+  const cardType = (card as any).type;
+  if (cardType === "WILD" || cardType === "WILD_DRAW" || cardType === "WILD DRAW") {
     return "#FFFFFF";
   }
   if ("color" in card && card.color === "YELLOW") {
@@ -35,7 +37,8 @@ function getTextColor(card: Card): string {
 }
 
 function isWildCard(card: Card): boolean {
-  return card.type === "WILD" || card.type === "WILD DRAW";
+  const cardType = (card as any).type;
+  return cardType === "WILD" || cardType === "WILD_DRAW" || cardType === "WILD DRAW";
 }
 
 function getCardSymbol(card: Card): string {
@@ -49,6 +52,7 @@ function getCardSymbol(card: Card): string {
 }
 
 function getMainText(card: Card): string {
+  const cardType = (card as any).type;
   if (card.type === "NUMBERED" && "number" in card) {
     return card.number.toString();
   }
@@ -56,13 +60,14 @@ function getMainText(card: Card): string {
   if (card.type === "REVERSE") return "REVERSE";
   if (card.type === "DRAW") return "DRAW";
   if (card.type === "WILD") return "WILD";
-  if (card.type === "WILD DRAW") return "WILD";
+  if (cardType === "WILD DRAW" || cardType === "WILD_DRAW") return "WILD";
   return "";
 }
 
 function getSubText(card: Card): string {
+  const cardType = (card as any).type;
   if (card.type === "DRAW") return "+2";
-  if (card.type === "WILD DRAW") return "DRAW 4";
+  if (cardType === "WILD DRAW" || cardType === "WILD_DRAW") return "DRAW 4";
   return "";
 }
 </script>
