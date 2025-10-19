@@ -1,123 +1,149 @@
 <template>
   <div class="lobby-container">
-    <div class="lobby-header">
-      <h1>UNO Multiplayer Lobby</h1>
-      <div class="player-info" v-if="playerName">
-        <span>Playing as: <strong>{{ playerName }}</strong></span>
+    <div class="lobby-content-wrapper">
+      <div class="lobby-header">
+        <h1>UNO Multiplayer Lobby</h1>
+        <div class="player-info" v-if="playerName">
+          <span
+            >Playing as: <strong>{{ playerName }}</strong></span
+          >
+        </div>
       </div>
-    </div>
 
-    <div v-if="!playerName" class="name-input-section">
-      <h2>Enter Your Name</h2>
-      <div class="input-group">
-        <input
-          v-model="tempPlayerName"
-          @keyup.enter="setPlayerName"
-          placeholder="Your name"
-          class="name-input"
-          maxlength="20"
-        />
-        <button @click="setPlayerName" :disabled="!tempPlayerName.trim()" class="btn btn-primary">
-          Set Name
-        </button>
-      </div>
-    </div>
-
-    <div v-else class="lobby-content">
-      <div class="create-game-section">
-        <h2>Create New Game</h2>
-        <div class="create-game-form">
-          <div class="input-group">
-            <label>Target Score:</label>
-            <select v-model="targetScore" class="score-select">
-              <option value="300">300</option>
-              <option value="500">500</option>
-              <option value="750">750</option>
-              <option value="1000">1000</option>
-            </select>
-          </div>
-          <button @click="createGame" :disabled="loading" class="btn btn-primary">
-            {{ loading ? 'Creating...' : 'Create Game' }}
+      <div v-if="!playerName" class="name-input-section">
+        <h2>Enter Your Name</h2>
+        <div class="input-group">
+          <input
+            v-model="tempPlayerName"
+            @keyup.enter="setPlayerName"
+            placeholder="Your name"
+            class="name-input"
+            maxlength="20"
+          />
+          <button
+            @click="setPlayerName"
+            :disabled="!tempPlayerName.trim()"
+            class="btn btn-primary"
+          >
+            Set Name
           </button>
         </div>
       </div>
 
-      <div class="divider">OR</div>
-
-      <div class="join-game-section">
-        <h2>Join Existing Game</h2>
-        <div class="join-game-form">
-          <div class="input-group">
-            <input
-              v-model="gameIdToJoin"
-              @keyup.enter="joinGame"
-              placeholder="Game ID"
-              class="game-id-input"
-            />
-            <button @click="joinGame" :disabled="!gameIdToJoin.trim() || loading" class="btn btn-secondary">
-              {{ loading ? 'Joining...' : 'Join Game' }}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="available-games-section">
-        <h2>Available Games</h2>
-        <div v-if="availableGames.length === 0" class="no-games">
-          No games available. Create one to get started!
-        </div>
-        <div v-else class="games-list">
-          <div
-            v-for="game in availableGames"
-            :key="game.id"
-            class="game-card"
-            @click="joinGameById(game.id)"
-          >
-            <div class="game-info">
-              <h3>Game #{{ game.id.substring(0, 8) }}</h3>
-              <p>Players: {{ game.players.length }}/4</p>
-              <p>Target Score: {{ game.targetScore }}</p>
-              <p>Status: {{ game.state.replace('_', ' ') }}</p>
-            </div>
-            <div class="players-list">
-              <div v-for="player in game.players" :key="player.id" class="player-item">
-                {{ player.name }} {{ player.isOnline ? '🟢' : '🔴' }}
-              </div>
+      <div v-else class="lobby-content">
+        <div class="create-game-section">
+          <h2>Create New Game</h2>
+          <div class="create-game-form">
+            <div class="input-group">
+              <label>Target Score:</label>
+              <input
+                type="number"
+                v-model.number="targetScore"
+                class="score-input"
+                min="100"
+                max="10000"
+                step="50"
+                placeholder="Target score"
+              />
             </div>
             <button
-              v-if="game.state === 'WAITING_FOR_PLAYERS' && game.players.length < 4"
-              class="btn btn-small btn-secondary"
-              @click.stop="joinGameById(game.id)"
+              @click="createGame"
+              :disabled="loading"
+              class="btn btn-primary"
             >
-              Join
+              {{ loading ? "Creating..." : "Create Game" }}
             </button>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div v-if="error" class="error-message">
-      {{ error }}
+        <div class="divider">OR</div>
+
+        <div class="join-game-section">
+          <h2>Join Existing Game</h2>
+          <div class="join-game-form">
+            <div class="input-group">
+              <input
+                v-model="gameIdToJoin"
+                @keyup.enter="joinGame"
+                placeholder="Game ID"
+                class="game-id-input"
+              />
+              <button
+                @click="joinGame"
+                :disabled="!gameIdToJoin.trim() || loading"
+                class="btn btn-secondary"
+              >
+                {{ loading ? "Joining..." : "Join Game" }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="available-games-section">
+          <h2>Available Games</h2>
+          <div v-if="availableGames.length === 0" class="no-games">
+            No games available. Create one to get started!
+          </div>
+          <div v-else class="games-list">
+            <div
+              v-for="game in availableGames"
+              :key="game.id"
+              class="game-card"
+              @click="joinGameById(game.id)"
+            >
+              <div class="game-info">
+                <h3>Game #{{ game.id.substring(0, 8) }}</h3>
+                <p>Players: {{ game.players.length }}/4</p>
+                <p>Target Score: {{ game.targetScore }}</p>
+                <p>Status: {{ game.state.replace("_", " ") }}</p>
+              </div>
+              <div class="players-list">
+                <div
+                  v-for="player in game.players"
+                  :key="player.id"
+                  class="player-item"
+                >
+                  {{ player.name }} {{ player.isOnline ? "🟢" : "🔴" }}
+                </div>
+              </div>
+              <button
+                v-if="
+                  game.state === 'WAITING_FOR_PLAYERS' &&
+                  game.players.length < 4
+                "
+                class="btn btn-small btn-secondary"
+                @click.stop="joinGameById(game.id)"
+              >
+                Join
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="error" class="error-message">
+        {{ error }}
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { multiplayerGameStateManager } from '../services/multiplayerGameStateManager';
-import { apolloClient } from '../services/graphql/client';
-import { GET_GAMES } from '../services/graphql/queries';
-import type { MultiplayerGame } from '../services/multiplayerGameStateManager';
+import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
+import { multiplayerGameStateManager } from "../services/multiplayerGameStateManager";
+import { apolloClient } from "../services/graphql/client";
+import { GET_GAMES } from "../services/graphql/queries";
+import type { MultiplayerGame } from "../services/multiplayerGameStateManager";
 
 const router = useRouter();
 
-const playerName = ref<string>('');
-const tempPlayerName = ref<string>('');
+const playerName = ref<string>("");
+const tempPlayerName = ref<string>("");
 const targetScore = ref<number>(500);
-const gameIdToJoin = ref<string>('');
+const gameIdToJoin = ref<string>("");
 const loading = ref<boolean>(false);
-const error = ref<string>('');
+const error = ref<string>("");
 const availableGames = ref<MultiplayerGame[]>([]);
 
 const canCreateOrJoin = computed(() => playerName.value.trim().length > 0);
@@ -125,22 +151,25 @@ const canCreateOrJoin = computed(() => playerName.value.trim().length > 0);
 const setPlayerName = () => {
   if (tempPlayerName.value.trim()) {
     playerName.value = tempPlayerName.value.trim();
-    tempPlayerName.value = '';
+    tempPlayerName.value = "";
     loadAvailableGames();
   }
 };
 
 const createGame = async () => {
   if (!playerName.value) return;
-  
+
   loading.value = true;
-  error.value = '';
-  
+  error.value = "";
+
   try {
-    const game = await multiplayerGameStateManager.createGame(playerName.value, targetScore.value);
-    router.push({ name: 'game', query: { gameId: game.id } });
+    const game = await multiplayerGameStateManager.createGame(
+      playerName.value,
+      targetScore.value,
+    );
+    router.push({ name: "game", query: { gameId: game.id } });
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to create game';
+    error.value = err instanceof Error ? err.message : "Failed to create game";
   } finally {
     loading.value = false;
   }
@@ -148,21 +177,24 @@ const createGame = async () => {
 
 const joinGame = async () => {
   if (!playerName.value || !gameIdToJoin.value.trim()) return;
-  
+
   await joinGameById(gameIdToJoin.value.trim());
 };
 
 const joinGameById = async (gameId: string) => {
   if (!playerName.value) return;
-  
+
   loading.value = true;
-  error.value = '';
-  
+  error.value = "";
+
   try {
-    const game = await multiplayerGameStateManager.joinGame(gameId, playerName.value);
-    router.push({ name: 'game', query: { gameId: game.id } });
+    const game = await multiplayerGameStateManager.joinGame(
+      gameId,
+      playerName.value,
+    );
+    router.push({ name: "game", query: { gameId: game.id } });
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to join game';
+    error.value = err instanceof Error ? err.message : "Failed to join game";
   } finally {
     loading.value = false;
   }
@@ -172,14 +204,15 @@ const loadAvailableGames = async () => {
   try {
     const result = await apolloClient.query({
       query: GET_GAMES,
-      fetchPolicy: 'network-only'
+      fetchPolicy: "network-only",
     });
-    
-    availableGames.value = result.data.games.filter((game: MultiplayerGame) => 
-      game.state === 'WAITING_FOR_PLAYERS' || game.state === 'IN_PROGRESS'
+
+    availableGames.value = result.data.games.filter(
+      (game: MultiplayerGame) =>
+        game.state === "WAITING_FOR_PLAYERS" || game.state === "IN_PROGRESS",
     );
   } catch (err) {
-    console.error('Failed to load games:', err);
+    console.error("Failed to load games:", err);
   }
 };
 
@@ -192,12 +225,18 @@ onMounted(() => {
 
 <style scoped>
 .lobby-container {
-  max-width: 800px;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
   padding: 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
   color: white;
+  box-sizing: border-box;
+}
+
+.lobby-content-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .lobby-header {
@@ -264,7 +303,8 @@ onMounted(() => {
 }
 
 .name-input,
-.game-id-input {
+.game-id-input,
+.score-input {
   flex: 1;
   padding: 12px;
   border: none;
@@ -364,7 +404,7 @@ onMounted(() => {
 }
 
 .btn-primary {
-  background: #4CAF50;
+  background: #4caf50;
   color: white;
 }
 
@@ -374,12 +414,12 @@ onMounted(() => {
 }
 
 .btn-secondary {
-  background: #2196F3;
+  background: #2196f3;
   color: white;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #1976D2;
+  background: #1976d2;
   transform: translateY(-2px);
 }
 
@@ -402,17 +442,17 @@ onMounted(() => {
   .lobby-container {
     padding: 15px;
   }
-  
+
   .input-group {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .name-input,
   .game-id-input {
     min-width: auto;
   }
-  
+
   .game-card {
     padding: 15px;
   }
