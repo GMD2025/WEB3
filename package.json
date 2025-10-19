@@ -3,7 +3,8 @@
   "packageManager": "yarn@4.6.0",
   "scripts": {
     "build": "tsc",
-    "test": "yarn workspaces foreach --all run test"
+    "test": "yarn workspaces foreach --all run test",
+    "dev": "yarn workspaces foreach --all --parallel run dev"
   },
   "workspaces": [
     "client",

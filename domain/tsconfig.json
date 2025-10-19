@@ -6,6 +6,12 @@
     "target": "ES2022",
     "lib": ["ES2022", "DOM"],
     "moduleResolution": "node16",
-    "module": "Node16"
-  }
+    "module": "Node16",
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "__test__"]
 }
