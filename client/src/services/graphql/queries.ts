@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client/core';
+import { gql } from "@apollo/client/core";
 
 export const CARD_FRAGMENT = gql`
   fragment CardInfo on Card {
@@ -28,6 +28,9 @@ export const ROUND_FRAGMENT = gql`
     }
     playerHands {
       playerId
+      cards {
+        ...CardInfo
+      }
       cardCount
       hasUno
     }
@@ -112,8 +115,18 @@ export const JOIN_GAME = gql`
 `;
 
 export const PLAY_CARD = gql`
-  mutation PlayCard($gameId: ID!, $playerId: ID!, $cardIndex: Int!, $namedColor: Color) {
-    playCard(gameId: $gameId, playerId: $playerId, cardIndex: $cardIndex, namedColor: $namedColor) {
+  mutation PlayCard(
+    $gameId: ID!
+    $playerId: ID!
+    $cardIndex: Int!
+    $namedColor: Color
+  ) {
+    playCard(
+      gameId: $gameId
+      playerId: $playerId
+      cardIndex: $cardIndex
+      namedColor: $namedColor
+    ) {
       success
       message
       game {
@@ -151,8 +164,16 @@ export const SAY_UNO = gql`
 `;
 
 export const CATCH_UNO_FAILURE = gql`
-  mutation CatchUnoFailure($gameId: ID!, $playerId: ID!, $accusedPlayerId: ID!) {
-    catchUnoFailure(gameId: $gameId, playerId: $playerId, accusedPlayerId: $accusedPlayerId) {
+  mutation CatchUnoFailure(
+    $gameId: ID!
+    $playerId: ID!
+    $accusedPlayerId: ID!
+  ) {
+    catchUnoFailure(
+      gameId: $gameId
+      playerId: $playerId
+      accusedPlayerId: $accusedPlayerId
+    ) {
       success
       message
       game {

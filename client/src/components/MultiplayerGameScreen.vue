@@ -5,8 +5,12 @@
       <div class="game-info">
         <h2>UNO Game #{{ game?.id?.substring(0, 8) }}</h2>
         <div class="game-status">
-          <span class="status-badge" :class="game?.state.toLowerCase().replace('_', '-')">
-            {{ game?.state.replace('_', ' ') }}
+          <span
+            v-if="game?.state"
+            class="status-badge"
+            :class="game?.state?.toLowerCase().replace('_', '-')"
+          >
+            {{ game?.state?.replace("_", " ") }}
           </span>
           <span v-if="game?.targetScore" class="target-score">
             Target: {{ game.targetScore }}
@@ -27,10 +31,16 @@
 
     <div v-else-if="game.state === 'WAITING_FOR_PLAYERS'" class="waiting-state">
       <h3>Waiting for players...</h3>
-      <p>Share this game ID with friends: <strong>{{ game.id }}</strong></p>
+      <p>
+        Share this game ID with friends: <strong>{{ game.id }}</strong>
+      </p>
       <div class="players-waiting">
-        <div v-for="player in game.players" :key="player.id" class="player-waiting">
-          {{ player.name }} {{ player.isOnline ? '🟢' : '🔴' }}
+        <div
+          v-for="player in game.players"
+          :key="player.id"
+          class="player-waiting"
+        >
+          {{ player.name }} {{ player.isOnline ? "🟢" : "🔴" }}
         </div>
       </div>
       <p>Game will start automatically when 2-4 players have joined.</p>
@@ -50,10 +60,14 @@
           <div class="player-header">
             <div class="player-details">
               <span class="player-name">{{ player.name }}</span>
-              <span class="online-status">{{ player.isOnline ? '🟢' : '🔴' }}</span>
+              <span class="online-status">{{
+                player.isOnline ? "🟢" : "🔴"
+              }}</span>
             </div>
             <div class="player-stats">
-              <span class="card-count">{{ getPlayerHandSize(index) }} cards</span>
+              <span class="card-count"
+                >{{ getPlayerHandSize(index) }} cards</span
+              >
               <span class="score">Score: {{ player.score }}</span>
             </div>
             <button
@@ -68,13 +82,19 @@
       </div>
 
       <div class="game-board">
-        <div class="draw-pile" @click="drawCard" :class="{ disabled: !canDraw }">
+        <div
+          class="draw-pile"
+          @click="drawCard"
+          :class="{ disabled: !canDraw }"
+        >
           <div class="pile-stack">
             <div class="card-back"></div>
             <div class="card-back offset-1"></div>
             <div class="card-back offset-2"></div>
           </div>
-          <div class="pile-label">Draw ({{ game.currentRound?.drawPileSize || 0 }})</div>
+          <div class="pile-label">
+            Draw ({{ game.currentRound?.drawPileSize || 0 }})
+          </div>
         </div>
 
         <div class="current-card-area">
@@ -84,7 +104,9 @@
           <div class="current-color" v-if="game.currentRound?.currentColor">
             Current Color: {{ game.currentRound.currentColor }}
           </div>
-          <div class="pile-label">Discard ({{ game.currentRound?.discardPileSize || 0 }})</div>
+          <div class="pile-label">
+            Discard ({{ game.currentRound?.discardPileSize || 0 }})
+          </div>
         </div>
       </div>
 
@@ -135,22 +157,28 @@
           <span>{{ player.name }}: {{ player.score }}</span>
         </div>
       </div>
-      <button @click="goToLobby" class="btn btn-primary">
-        Back to Lobby
-      </button>
+      <button @click="goToLobby" class="btn btn-primary">Back to Lobby</button>
     </div>
 
     <div class="actions-log">
       <h4>Game Log</h4>
       <div class="log-entries">
-        <div v-for="action in recentActions" :key="action.timestamp" class="log-entry">
+        <div
+          v-for="action in recentActions"
+          :key="action.timestamp"
+          class="log-entry"
+        >
           <span class="timestamp">{{ formatTime(action.timestamp) }}</span>
           <span class="message">{{ action.message }}</span>
         </div>
       </div>
     </div>
 
-    <div v-if="showColorPicker" class="color-picker-modal" @click="closeColorPicker">
+    <div
+      v-if="showColorPicker"
+      class="color-picker-modal"
+      @click="closeColorPicker"
+    >
       <div class="color-picker" @click.stop>
         <h3>Choose a color:</h3>
         <div class="color-options">
@@ -170,11 +198,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { multiplayerGameStateManager } from '../services/multiplayerGameStateManager';
-import UnoCard from './UnoCard.vue';
-import type { Color } from '../types/gameTypes';
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { multiplayerGameStateManager } from "../services/multiplayerGameStateManager";
+import UnoCard from "./UnoCard.vue";
+import type { Color } from "../types/gameTypes";
 
 const route = useRoute();
 const router = useRouter();
@@ -183,12 +211,13 @@ const router = useRouter();
 const showColorPicker = ref<boolean>(false);
 const pendingCardIndex = ref<number>(-1);
 
-const game = computed(() => multiplayerGameStateManager.game);
-const playerId = computed(() => multiplayerGameStateManager.playerId);
-const isMyTurn = computed(() => multiplayerGameStateManager.isMyTurn);
-const myHand = computed(() => multiplayerGameStateManager.myHand);
-const canDraw = computed(() => multiplayerGameStateManager.canDraw);
-const actions = computed(() => multiplayerGameStateManager.actions);
+// Use the manager's computed properties directly to avoid double-wrapping
+const game = multiplayerGameStateManager.game;
+const playerId = multiplayerGameStateManager.playerId;
+const isMyTurn = multiplayerGameStateManager.isMyTurn;
+const myHand = multiplayerGameStateManager.myHand;
+const canDraw = multiplayerGameStateManager.canDraw;
+const actions = multiplayerGameStateManager.actions;
 
 const canSayUno = computed(() => {
   return myHand.value.length === 2 && isMyTurn.value;
@@ -199,15 +228,15 @@ const canPlayAnyCard = computed(() => {
 });
 
 const recentActions = computed(() => {
-  return actions.value.slice(-10).reverse();
+  return actions.value?.slice(-10).reverse() || [];
 });
 
 const handleCardClick = async (cardIndex: number) => {
   if (!canPlayCard(cardIndex) || !isMyTurn.value) return;
 
   const card = myHand.value[cardIndex];
-  
-  if (card.type === 'WILD' || card.type === 'WILD_DRAW') {
+
+  if (card.type === "WILD" || card.type === "WILD_DRAW") {
     pendingCardIndex.value = cardIndex;
     showColorPicker.value = true;
     return;
@@ -216,20 +245,20 @@ const handleCardClick = async (cardIndex: number) => {
   try {
     await multiplayerGameStateManager.playCard(cardIndex);
   } catch (error) {
-    console.error('Failed to play card:', error);
-    alert(error instanceof Error ? error.message : 'Failed to play card');
+    console.error("Failed to play card:", error);
+    alert(error instanceof Error ? error.message : "Failed to play card");
   }
 };
 
 const selectColor = async (color: Color) => {
   showColorPicker.value = false;
-  
+
   if (pendingCardIndex.value >= 0) {
     try {
       await multiplayerGameStateManager.playCard(pendingCardIndex.value, color);
     } catch (error) {
-      console.error('Failed to play card:', error);
-      alert(error instanceof Error ? error.message : 'Failed to play card');
+      console.error("Failed to play card:", error);
+      alert(error instanceof Error ? error.message : "Failed to play card");
     }
     pendingCardIndex.value = -1;
   }
@@ -242,12 +271,12 @@ const closeColorPicker = () => {
 
 const drawCard = async () => {
   if (!canDraw.value) return;
-  
+
   try {
     await multiplayerGameStateManager.drawCard();
   } catch (error) {
-    console.error('Failed to draw card:', error);
-    alert(error instanceof Error ? error.message : 'Failed to draw card');
+    console.error("Failed to draw card:", error);
+    alert(error instanceof Error ? error.message : "Failed to draw card");
   }
 };
 
@@ -255,8 +284,8 @@ const sayUno = async () => {
   try {
     await multiplayerGameStateManager.sayUno();
   } catch (error) {
-    console.error('Failed to say UNO:', error);
-    alert(error instanceof Error ? error.message : 'Failed to say UNO');
+    console.error("Failed to say UNO:", error);
+    alert(error instanceof Error ? error.message : "Failed to say UNO");
   }
 };
 
@@ -264,8 +293,10 @@ const catchUnoFailure = async (accusedPlayerId: string) => {
   try {
     await multiplayerGameStateManager.catchUnoFailure(accusedPlayerId);
   } catch (error) {
-    console.error('Failed to catch UNO failure:', error);
-    alert(error instanceof Error ? error.message : 'Failed to catch UNO failure');
+    console.error("Failed to catch UNO failure:", error);
+    alert(
+      error instanceof Error ? error.message : "Failed to catch UNO failure",
+    );
   }
 };
 
@@ -287,20 +318,31 @@ const formatTime = (timestamp: string): string => {
 
 const goToLobby = () => {
   multiplayerGameStateManager.destroy();
-  router.push({ name: 'lobby' });
+  router.push({ name: "lobby" });
 };
 
 onMounted(async () => {
   const gameId = route.query.gameId as string;
+  console.log("MultiplayerGameScreen mounted, gameId:", gameId);
+  console.log("Current game:", game.value);
+
   if (gameId) {
-    try {
-      await multiplayerGameStateManager.loadGame(gameId);
-    } catch (error) {
-      console.error('Failed to load game:', error);
-      router.push({ name: 'lobby' });
+    // Only load game if we don't already have it
+    if (!game.value || game.value.id !== gameId) {
+      try {
+        console.log("Loading game...");
+        await multiplayerGameStateManager.loadGame(gameId);
+        console.log("Game loaded:", game.value);
+      } catch (error) {
+        console.error("Failed to load game:", error);
+        router.push({ name: "lobby" });
+      }
+    } else {
+      console.log("Game already loaded, skipping load");
     }
   } else {
-    router.push({ name: 'lobby' });
+    console.log("No gameId in query, redirecting to lobby");
+    router.push({ name: "lobby" });
   }
 });
 
@@ -369,9 +411,15 @@ onUnmounted(() => {
 }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.7; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .loading-state,
@@ -697,7 +745,11 @@ onUnmounted(() => {
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
     transform: translateY(0);
   }
   40% {
@@ -717,22 +769,22 @@ onUnmounted(() => {
   .multiplayer-game-container {
     padding: 10px;
   }
-  
+
   .game-header {
     flex-direction: column;
     text-align: center;
     gap: 10px;
   }
-  
+
   .game-board {
     flex-direction: column;
     gap: 30px;
   }
-  
+
   .cards-container {
     gap: 5px;
   }
-  
+
   .other-players {
     grid-template-columns: 1fr;
   }
